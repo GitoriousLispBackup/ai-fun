@@ -1,7 +1,3 @@
-<html>
-<head><title>gopher://sdf.lonestar.org/0/users/bulibuta/devel/lisp/x-and-0.lisp</title></head>
-<body>
-<pre>
 (defvar *board* (make-array '(3 3) :initial-element nil))
 
 (defun parse-move (move mark)
@@ -35,7 +31,3 @@
 	    (setq player 2) (setq mark #\0)))
       (parse-move (parse-integer (prompt-move player)) mark)))
   (print-board))
-.
-</pre>
-
-</body></html>

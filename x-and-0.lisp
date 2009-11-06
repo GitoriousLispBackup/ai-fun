@@ -21,10 +21,12 @@
     (format t "~%"))
   (format t " '---'---'---'"))
 
-(defun start-game ()
+(defun board-init (size)
   (defvar board nil)
-  (setf board (make-array '(3 3) :initial-element nil))
-  (dotimes (i 9)
+  (setf board (make-array (list size size) :initial-element nil)))
+
+(defun board-game-run (board)
+  (dotimes (i (array-total-size board))
     (print-board board)
     (let ((player 0) (mark 0))
       (if (eql (mod i 2) 0)

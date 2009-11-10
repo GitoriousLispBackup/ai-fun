@@ -1,4 +1,5 @@
-(use-package 'ai-fun.board-games)
+(defpackage :ai-fun.x-and-0-board
+  (:use :common-lisp :ai-fun.board-games))
 
 (defclass x-and-0-board (board)
   ( (size

@@ -1,4 +1,4 @@
-;;;(use-package :board-games) ;; :todo:
+(use-package 'ai-fun.board-games)
 
 (defclass x-and-0-board (board)
   ( (size

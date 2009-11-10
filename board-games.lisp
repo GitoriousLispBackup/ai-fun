@@ -1,6 +1,7 @@
-;;; board class
+(defpackage :ai-fun.board-games
+  (:use :common-lisp))
 
-;;;(in-package :board-games) ;; :todo:
+;;; board class
 
 (defclass board ()
   ((size

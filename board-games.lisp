@@ -1,6 +1,6 @@
 (defpackage :ai-fun.board-games
   (:use :common-lisp))
-
+(in-package :ai-fun.board-games)
 ;;; board class
 
 (defclass board ()

@@ -1,5 +1,7 @@
 (defpackage :ai-fun.board-games
-  (:use :common-lisp))
+  (:use :common-lisp)
+  (:export :print-board
+		   :board))
 (in-package :ai-fun.board-games)
 ;;; board class
 

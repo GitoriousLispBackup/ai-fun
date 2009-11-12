@@ -12,3 +12,10 @@
 (defun test-manual-game ()
   (ai-fun.x-and-0::x-and-0-run 
    (make-instance 'ai-fun.x-and-0::x-and-0-board)))
+
+
+;;; * emacs display settings *
+;;; Local Variables:
+;;; default-tab-width: 4
+;;; indent-tabs-mode: t
+;;; End:

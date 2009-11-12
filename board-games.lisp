@@ -1,7 +1,9 @@
 (defpackage :ai-fun.board-games
   (:use :common-lisp)
   (:export :print-board
-		   :board))
+		   :board
+		   :board-elt))
+
 (in-package :ai-fun.board-games)
 ;;; board class
 
@@ -42,9 +44,17 @@
   (:documentation "Print a game board at the standard output using ASCII
   chars"))
 
+;;; ret. board element at (x,y)
+(defgeneric board-elt (board x y)
+  (:documentation "Return the element at coords. (x,y)"))
+
+(defmethod board-elt ((brd board) x y)
+  (when (or (< x 0) (>= x (size brd) ) (< y 0) (>= y (size brd)))
+	(error "coordinates out of board"))
+  (aref (slot-value brd 'board-array) x y))
+
 (defmethod print-board ((brd board))
-  (flet ( 
-		 (print-sep1-line (width)
+  (flet ((print-sep1-line (width)
 		   (format t "-")
 		   (dotimes (j width)
 			 (format t "-"))
@@ -84,3 +94,10 @@
 			(format t "|"))
 		  (format t "~%")
 		  (print-sep2-line (size brd)))))))
+
+
+;;; * emacs display settings *
+;;; Local Variables:
+;;; default-tab-width: 4
+;;; indent-tabs-mode: t
+;;; End:

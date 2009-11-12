@@ -4,10 +4,8 @@
 (in-package :ai-fun.x-and-0)
 
 (defclass x-and-0-board (board)
-  ( (size
-	 :initform 3)
-	(point-at-intersection
-	 :initform nil)))
+  ((size :initform 3)
+   (point-at-intersection :initform nil)))
 
 (defun parse-move (board move mark)
   (let ((x (/ (- move (mod move 10)) 10)) 

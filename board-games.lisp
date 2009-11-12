@@ -2,6 +2,8 @@
   (:use :common-lisp)
   (:export :print-board
 		   :board
+		   :size
+		   :board-array
 		   :board-elt))
 
 (in-package :ai-fun.board-games)
@@ -33,9 +35,9 @@
 	:initform nil)))
 
 
-(defmethod initialize-instance :after ((brd board) &key)
-  (setf (slot-value brd 'board-array)
-		(make-array (list (size brd) (size brd)) :initial-element nil)))
+(defmethod initialize-instance :after ((board board) &key)
+  (setf (slot-value board 'board-array)
+		(make-array (list (size board) (size board)) :initial-element nil)))
 
 ;;; end board class
 

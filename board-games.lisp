@@ -1,44 +1,44 @@
 (defpackage :ai-fun.board-games
   (:use :common-lisp)
   (:export :print-board
-		   :board
-		   :size
-		   :point-at-intersection
-		   :board-array
-		   :board-elt))
+           :board
+           :size
+           :point-at-intersection
+           :board-array
+           :board-elt))
 
 (in-package :ai-fun.board-games)
 ;;; board class
 
 (defclass board ()
   ((size
-	:initarg :size
-	:initform (error "Must supply board size")
-	:reader size)
+    :initarg :size
+    :initform (error "Must supply board size")
+    :reader size)
 
    ;; :fixme: - probably not needed
    (first-is-black
-	:initarg :first-is-black
-	:initform t
-	:reader first-is-black)
+    :initarg :first-is-black
+    :initform t
+    :reader first-is-black)
 
    ;; Some games use the intersection (go), others use the spaces in the grid
    ;; (x-and-0)
    ;; This property is used when the board is displayed
    (point-at-intersection
-	:initarg :point-at-intersection
-	:initform t
-	:reader point-at-intersection)
+    :initarg :point-at-intersection
+    :initform t
+    :reader point-at-intersection)
 
    ;; Will be initialized by the initialize-instance (see below)
    ;; :todo: - add accessor
    (board-array
-	:initform nil)))
+    :initform nil)))
 
 
 (defmethod initialize-instance :after ((board board) &key)
   (setf (slot-value board 'board-array)
-		(make-array (list (size board) (size board)) :initial-element nil)))
+        (make-array (list (size board) (size board)) :initial-element nil)))
 
 ;;; end board class
 
@@ -53,54 +53,54 @@
 
 (defmethod board-elt ((brd board) x y)
   (when (or (< x 0) (>= x (size brd) ) (< y 0) (>= y (size brd)))
-	(error "coordinates out of board"))
+    (error "coordinates out of board"))
   (aref (slot-value brd 'board-array) x y))
 
 (defmethod print-board ((brd board))
   (flet ((print-sep1-line (width)
-		   (format t "-")
-		   (dotimes (j width)
-			 (format t "-"))
-		   (format t "-~%"))
+           (format t "-")
+           (dotimes (j width)
+             (format t "-"))
+           (format t "-~%"))
 
-		 (print-sep2-line (width)
-		   (format t ".")
-		   (dotimes (j width)
-			 (format t "-."))
-		   (format t "~%")))
-	(if (point-at-intersection brd)
-		;; if point is at intersection (eg. go)
-		(progn
-		  ;; first line
-		  (print-sep1-line (size brd))
-		  ;; main content
-		  (dotimes (i (size brd))
-			(format t "|")
+         (print-sep2-line (width)
+           (format t ".")
+           (dotimes (j width)
+             (format t "-."))
+           (format t "~%")))
+    (if (point-at-intersection brd)
+        ;; if point is at intersection (eg. go)
+        (progn
+          ;; first line
+          (print-sep1-line (size brd))
+          ;; main content
+          (dotimes (i (size brd))
+            (format t "|")
+            (dotimes (j (size brd))
+              (if (aref (slot-value brd 'board-array) i j)
+                  (format t "~a" (aref (slot-value brd 'board-array) i j))
+                  (format t ".")))
+            (format t "|~%"))
+          ;; last line
+          (print-sep1-line (size brd)))
+        ;; else - point in grid space (e.g. x-and-0)
+        (progn
+          ;; first line
+          (print-sep2-line (size brd))
+          ;; main content
+          (dotimes (i (size brd))
+            (format t "|")
 			(dotimes (j (size brd))
 			  (if (aref (slot-value brd 'board-array) i j)
 				  (format t "~a" (aref (slot-value brd 'board-array) i j))
-				  (format t ".")))
-			(format t "|~%"))
-		  ;; last line
-		  (print-sep1-line (size brd)))
-		;; else - point in grid space (e.g. x-and-0)
-		(progn
-		  ;; first line
-		  (print-sep2-line (size brd))
-		  ;; main content
-		  (dotimes (i (size brd))
-			(format t "|")
-		  (dotimes (j (size brd))
-			(if (aref (slot-value brd 'board-array) i j)
-				(format t "~a" (aref (slot-value brd 'board-array) i j))
-				(format t " "))
-			(format t "|"))
-		  (format t "~%")
-		  (print-sep2-line (size brd)))))))
+				  (format t " "))
+			  (format t "|"))
+			(format t "~%")
+			(print-sep2-line (size brd)))))))
 
 
 ;;; * emacs display settings *
 ;;; Local Variables:
 ;;; default-tab-width: 4
-;;; indent-tabs-mode: t
+;;; indent-tabs-mode: nil
 ;;; End:

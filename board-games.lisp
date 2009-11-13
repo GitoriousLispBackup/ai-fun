@@ -3,6 +3,7 @@
   (:export :print-board
 		   :board
 		   :size
+		   :point-at-intersection
 		   :board-array
 		   :board-elt))
 

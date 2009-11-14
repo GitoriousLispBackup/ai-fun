@@ -1,6 +1,6 @@
 (defpackage :ai-fun.x-and-0
   (:use :common-lisp :ai-fun.board-games)
-  (:export :x-and-0-board :parse-move))
+  (:export :x-and-0-board :parse-move :board-array :board-elt :x-and-0-end-p :x-and-0-run))
 (in-package :ai-fun.x-and-0)
 
 (defclass x-and-0-board (board)
@@ -21,7 +21,7 @@
 
 ;;; :fixme: - could be optimized - to check only the last move, not the whole board
 (defun x-and-0-end-p (board)
-  (labels ((three-in-a-row (board char pos-x pos-y direction-x direction-y)
+  (labels ((three-in-a-row (char pos-x pos-y direction-x direction-y)
              ;; out of board = finished checking in that direction
              (when (or (< pos-x 0) (< pos-y 0) (> pos-x 2) (> pos-y 2))
                (return-from three-in-a-row t))
@@ -29,23 +29,21 @@
              (when (null (board-elt board pos-x pos-y))
                (return-from three-in-a-row nil))
              (and (eql (board-elt board pos-x pos-y) char)
-                  (three-in-a-row board char (+ pos-x direction-x) (+ pos-y direction-y)
+                  (three-in-a-row char (+ pos-x direction-x) (+ pos-y direction-y)
                                   direction-x direction-y))))
     ;; check diagonals
     (when (or
-           (three-in-a-row board (board-elt board 0 0) 0 0 1 1)
-           (three-in-a-row board (board-elt board 0 2) 0 2 1 -1))
+           (three-in-a-row (board-elt board 0 0) 0 0 1 1)
+           (three-in-a-row (board-elt board 0 2) 0 2 1 -1))
       (return-from x-and-0-end-p t))
     ;; check lines
     (dotimes (i 3)
-      (when (three-in-a-row board (board-elt board 0 i) 0 i 1 0)
+      (when (three-in-a-row (board-elt board 0 i) 0 i 1 0)
         (return-from x-and-0-end-p t)))
     ;; check columns
     (dotimes (i 3)
-      (when (three-in-a-row board (board-elt board i 0) i 0 0 1)
-        (return-from x-and-0-end-p t)))
-    
-    ()))
+      (when (three-in-a-row (board-elt board i 0) i 0 0 1)
+        (return-from x-and-0-end-p t)))))
   
 (defun x-and-0-run (board)
   (let ((i 0))

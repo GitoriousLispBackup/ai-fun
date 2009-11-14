@@ -3,12 +3,12 @@
 ;;;   (require 'ai-fun)
 
 (asdf:defsystem :ai-fun
-  :components ((:file "board-games")
-			   (:file "x-and-0"
-					  :depends-on ("board-games"))
-			   (:file "test/x-and-0-test"
-					  :depends-on ("board-games"
-								   "x-and-0"))))
+    :components ((:file "board-games")
+                 (:file "x-and-0"
+                        :depends-on ("board-games"))
+                 (:file "test/x-and-0-test"
+                        :depends-on ("board-games"
+                                     "x-and-0"))))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

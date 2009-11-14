@@ -31,9 +31,9 @@
     :reader point-at-intersection)
 
    ;; Will be initialized by the initialize-instance (see below)
-   ;; :todo: - add accessor
    (board-array
-    :initform nil)))
+    :initform nil
+    :accessor board-array)))
 
 
 (defmethod initialize-instance :after ((board board) &key)
@@ -90,13 +90,13 @@
           ;; main content
           (dotimes (i (size brd))
             (format t "|")
-			(dotimes (j (size brd))
-			  (if (aref (slot-value brd 'board-array) i j)
-				  (format t "~a" (aref (slot-value brd 'board-array) i j))
-				  (format t " "))
-			  (format t "|"))
-			(format t "~%")
-			(print-sep2-line (size brd)))))))
+            (dotimes (j (size brd))
+              (if (aref (slot-value brd 'board-array) i j)
+                  (format t "~a" (aref (slot-value brd 'board-array) i j))
+                  (format t " "))
+              (format t "|"))
+            (format t "~%")
+            (print-sep2-line (size brd)))))))
 
 
 ;;; * emacs display settings *

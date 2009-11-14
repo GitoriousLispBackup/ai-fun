@@ -9,10 +9,10 @@
 
 (defun parse-move (board move mark)
   (let ((x (/ (- move (mod move 10)) 10)) 
-    (y (mod move 10)))
+        (y (mod move 10)))
     (if (and (< x 3) (< y 3) 
-     (eql (aref (slot-value board 'board-array) x y) nil))
-    (setf (aref (slot-value board 'board-array) x y) mark))))
+             (eql (aref (slot-value board 'board-array) x y) nil))
+        (setf (aref (slot-value board 'board-array) x y) mark))))
 
 (defun prompt-move (player)
   (format *query-io* "~%~a's move: " player)

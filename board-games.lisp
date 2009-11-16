@@ -1,12 +1,3 @@
-(defpackage :ai-fun.board-games
-  (:use :common-lisp)
-  (:export :print-board
-           :board
-           :size
-           :point-at-intersection
-           :board-array
-           :board-elt))
-
 (in-package :ai-fun.board-games)
 ;;; board class
 

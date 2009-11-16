@@ -1,5 +1,4 @@
-(use-package 'ai-fun.x-and-0)
-
+(in-package :ai-fun.test-unit)
 
 (defun test-parse-move ()
   (let ((board (make-instance 'x-and-0-board)))

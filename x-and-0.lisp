@@ -16,7 +16,7 @@
   (force-output *query-io*)
   (read-line *query-io*))
 
-;;; :fixme: - could be optimized - to check only the last move, not the whole board
+;;; :fixme: could be optimized to check only the last move, not the whole board
 (defun x-and-0-end-p (board)
   (labels ((three-in-a-row (char pos-x pos-y direction-x direction-y)
              ;; out of board = finished checking in that direction
@@ -26,7 +26,9 @@
              (when (null (board-elt board pos-x pos-y))
                (return-from three-in-a-row nil))
              (and (eql (board-elt board pos-x pos-y) char)
-                  (three-in-a-row char (+ pos-x direction-x) (+ pos-y direction-y)
+                  (three-in-a-row char 
+                                  (+ pos-x direction-x) 
+                                  (+ pos-y direction-y)
                                   direction-x direction-y))))
     ;; check diagonals
     (when (or
@@ -45,7 +47,7 @@
 (defun x-and-0-run (board)
   (let ((i 0))
     (loop
-       (print-board board)
+       (board-print board)
        (let ((player 0) (mark 0))
          (if (eql (mod i 2) 0)
              (progn
@@ -60,7 +62,7 @@
          (format t "game over~%")
          (return))
        (incf i))
-    (print-board board)))
+    (board-print board)))
 
 
 ;;; * emacs display settings *

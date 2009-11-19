@@ -34,7 +34,7 @@
 ;;; end board class
 
 
-(defgeneric print-board (board)
+(defgeneric board-print (board)
   (:documentation "Print a game board at the standard output using ASCII
   chars"))
 
@@ -47,7 +47,7 @@
     (error "coordinates out of board"))
   (aref (slot-value brd 'board-array) x y))
 
-(defmethod print-board ((brd board))
+(defmethod board-print ((brd board))
   (flet ((print-sep1-line (width)
            (format t "-")
            (dotimes (j width)

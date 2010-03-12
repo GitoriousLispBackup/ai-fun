@@ -176,7 +176,7 @@
     ((eql (interface player) :tcp)
      (when (null (slot-value player 'socket))
        (when (null *socket*)
-         (init-server-socket *tcp-port*))
+         (init-server-socket +tcp-port+))
        (player-accept-socket player *socket*))
      (player-read-data (usocket:socket-stream (slot-value player 'socket))))
 

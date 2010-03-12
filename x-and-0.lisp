@@ -4,17 +4,49 @@
   ((size :initform 3)
    (point-at-intersection :initform nil)))
 
-(defun parse-move (board move mark)
-  (let ((x (/ (- move (mod move 10)) 10)) 
-        (y (mod move 10)))
-    (if (and (< x 3) (< y 3) 
-             (eql (aref (slot-value board 'board-array) x y) nil))
-        (setf (aref (slot-value board 'board-array) x y) mark))))
 
-(defun prompt-move (player)
-  (format *query-io* "~%~a's move: " player)
-  (force-output *query-io*)
-  (read-line *query-io*))
+;;; @param[in] move : string containing a command (e.g. 'quit') or board
+;;; coordinates (represented either as a single integer or as two integers
+;;; separated by space).
+;;;
+;;; @return : nil if invalid coordinates, (list x y) on valid move,
+;;;   (list -1 -1) on user abort.
+;;;
+;;; :fixme: - remove \r at the end of the string
+(defun parse-move (board move mark)
+  (if (string-equal move "quit" :end1 (min 4 (length move)))
+      (progn
+        ;; :fixme: - use a function
+        (setf (last-x board) -1)
+        (setf (last-y board) -1)
+        (list -1 -1)) ; ret. specific list
+      ;; else - check if there is only one integer or two
+      (let ( (coords (split-sequence:split-sequence #\Space move))
+            (x 0) (y 0))
+        (if (= (length coords) 2)
+            (progn
+              (setf x (parse-integer (elt coords 0)))
+              (setf y (parse-integer (elt coords 1))))
+            (let ( (move-int (parse-integer move)))
+              (setf x (/ (- move-int (mod move-int 10)) 10))
+              (setf y (mod move-int 10))))
+        (format t ":debug: coord: ~a, ~a~%" x y)
+        (if (and (< x 3) (< y 3) 
+                 (eql (aref (slot-value board 'board-array) x y) nil))
+            (progn
+              ;; :fixme: - group the next 3 lines in a function
+              (setf (aref (slot-value board 'board-array) x y) mark)
+              (setf (last-x board) x) 
+              (setf (last-y board) y)
+              (list x y))))))
+
+
+;;; @return the last move as a list of coordinates
+(defun make-move (board player mark)
+  (let ((coord nil))
+    (loop until
+         (setf coord (parse-move board (player-prompt-move player) mark)))
+    coord))
 
 ;;; :fixme: could be optimized to check only the last move, not the whole board
 (defun x-and-0-end-p (board)
@@ -30,6 +62,10 @@
                                   (+ pos-x direction-x) 
                                   (+ pos-y direction-y)
                                   direction-x direction-y))))
+    ;; check if last move was (-1,-1) === user abort
+    (when (and (last-x board) (last-y board)
+               (= (last-x board) (last-y board) -1))
+      (return-from x-and-0-end-p t))
     ;; check diagonals
     (when (or
            (three-in-a-row (board-elt board 0 0) 0 0 1 1)
@@ -43,23 +79,22 @@
     (dotimes (i 3)
       (when (three-in-a-row (board-elt board i 0) i 0 0 1)
         (return-from x-and-0-end-p t)))))
+
   
-(defun x-and-0-run (board)
+(defun x-and-0-run (board player1 player2)
+  "Main loop"
   (let ((i 0))
     (loop
        (board-print board)
-       (let ((player 0) (mark 0))
-         (if (eql (mod i 2) 0)
-             (progn
-               (setq player 1) 
-               (setq mark #\X))
-             (progn
-               (setq player 2)
-               (setq mark #\0)))
-         (loop until
-              (parse-move board (parse-integer (prompt-move player)) mark)))
+       (if (eql (mod i 2) 0)
+           (player-announce-move player2
+                                 (make-move board player1 #\X))
+           (player-announce-move player1
+                                 (make-move board player2 #\0)))
        (when (x-and-0-end-p board)
          (format t "game over~%")
+         (player-cleanup player1)
+         (player-cleanup player2)
          (return))
        (incf i))
     (board-print board)))

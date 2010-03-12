@@ -2,9 +2,9 @@
 
 (defun test-parse-move ()
   (let ((board (make-instance 'x-and-0-board)))
-    (if (and (eql (parse-move board 68 #\X) nil)
-                  (eql (parse-move board 92 #\X) nil)
-                  (eql (parse-move board 22 #\X) #\X))
+    (if (and (eql (parse-move board "68" #\X) nil)
+                  (eql (parse-move board "92" #\X) nil)
+                  (equal (parse-move board "22" #\X) (list 2 2)))
         t ; test passed - ret. true
         (progn (format t "test-parse-move failed")
                nil))))
@@ -38,7 +38,16 @@
        (test-end-game)))
 
 (defun test-manual-game ()
-  (x-and-0-run (make-instance 'x-and-0-board)))
+  (x-and-0-run (make-instance 'x-and-0-board)
+               (make-instance 'player :name "lolek" :interface :tcp)
+               (make-instance 'player :name "bolek")))
+
+;;; function used for resetting various runtime variables during testing
+;;; (sockets, globals, etc.)
+(defun test-env-reset ()
+  (when *socket*
+    (usocket:socket-close *socket*)
+    (setf *socket* nil)))
 
 
 ;;; * emacs display settings *

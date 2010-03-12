@@ -1,5 +1,5 @@
 (defpackage :ai-fun.board-games
-  (:use :common-lisp)
+  (:use :common-lisp :usocket)
   (:export :print-board
            :board
            :size

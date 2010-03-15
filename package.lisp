@@ -10,7 +10,7 @@
 (defpackage :ai-fun.x-and-0
   (:use :common-lisp :ai-fun.board-games)
   (:export :x-and-0-board :parse-move :board-array 
-		   :board-elt :x-and-0-end-p :x-and-0-run))
+		   :board-elt :x-and-0-end-p :x-and-0-run :board-move))
 
 (defpackage :ai-fun.test-unit
   (:use :common-lisp :ai-fun.board-games :ai-fun.x-and-0)

@@ -6,9 +6,21 @@
                   (eql (parse-move board "92" #\X) nil)
                   (equal (parse-move board "22" #\X) (list 2 2)))
         t ; test passed - ret. true
-        (progn (format t "test-parse-move failed")
+        (progn (format t "test-parse-move failed~%")
                nil))))
 
+(defun test-x0-board-moves ()
+  (let ((board (make-instance 'x-and-0-board)))
+    (if (and 
+           (equal (board-move board 0 0 #\X) (list 0 0))
+           (equal (board-move board 2 2 #\X) (list 2 2))
+           (equal (board-move board -1 -1 nil) (list -1 -1))
+           (null (board-move board 3 3 #\X)))
+        t
+        (progn
+          (format t "board-move error~%")
+          nil))))
+    
 (defun test-end-game ()
   ;; game finished
   (let ((board (make-instance 'x-and-0-board)))
@@ -35,7 +47,8 @@
 
 (defun test-automatic-all ()
   (and (test-parse-move)
-       (test-end-game)))
+       (test-end-game)
+       (test-x0-board-moves)))
 
 (defun test-manual-game ()
   (x-and-0-run (make-instance 'x-and-0-board)

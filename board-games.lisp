@@ -60,10 +60,29 @@
 (defgeneric board-elt (board x y)
   (:documentation "Return the element at coords. (x,y)"))
 
+
+(defgeneric board-move (board x y mark)
+  (:documentation "Make a move on board. Return the coordinates as a list (list
+x y)"))
+
+
 (defmethod board-elt ((brd board) x y)
   (when (or (< x 0) (>= x (size brd) ) (< y 0) (>= y (size brd)))
     (error "coordinates out of board"))
   (aref (slot-value brd 'board-array) x y))
+
+
+(defmethod board-move ((board board) x y mark)
+  ;; (-1, -1) is a valid move (means user abort)
+  (when (or (< x -1) (>= x (size board)) (< y -1) (>= y (size board)))
+    (return-from board-move nil))
+  (when (and (>= x 0) (>= y 0))
+    (when (aref (slot-value board 'board-array) x y)
+      (return-from board-move nil)) ; alredy an element at (x,y)
+    (setf (aref (board-array board) x y) mark))
+  (setf (last-x board) x) 
+  (setf (last-y board) y)
+  (list x y))
 
 
 (defmethod board-print ((brd board))
@@ -215,7 +234,6 @@
     ))
 
 
-;; :fixme: - add limits - to refuse invalid coordinates immediately
 (defmethod player-prompt-move ((player player))
   (cond
     ((eql (interface player) :stdio)

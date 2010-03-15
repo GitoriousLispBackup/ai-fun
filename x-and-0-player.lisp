@@ -30,7 +30,8 @@
 
 (defmethod player-announce-move ((player x0-player-random) move)
   (format t ":debug:~a peer's move: ~a~%" player move)
-  (setf (elt (slot-value player 'board) (x0-cart-coord-to-int move)) 1))
+  (when (and (<= 0 (first move)) (<= 0 (second move)))
+	(setf (elt (slot-value player 'board) (x0-cart-coord-to-int move)) 1)))
 
 
 (defmethod player-cleanup ((player x0-player-random))

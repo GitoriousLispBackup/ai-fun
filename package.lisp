@@ -14,7 +14,7 @@
 
 (defpackage :ai-fun.test-unit
   (:use :common-lisp :ai-fun.board-games :ai-fun.x-and-0)
-  (:export :test-automatic-all :test-manual-game))
+  (:export :test-automatic-all :test-manual-game :test-game-human-vs-random-ai))
 
 
 ;;; * emacs display settings *

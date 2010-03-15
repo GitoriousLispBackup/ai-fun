@@ -14,27 +14,39 @@
 ;;;
 ;;; :fixme: - remove \r at the end of the string
 (defun parse-move (board move mark)
-  (if (string-equal move "quit" :end1 (min 4 (length move)))
-      (progn
-        ;; :fixme: - use a function
-        (setf (last-x board) -1)
-        (setf (last-y board) -1)
-        (list -1 -1)) ; ret. specific list
-      ;; else - check if there is only one integer or two
-      (let ( (coords (split-sequence:split-sequence #\Space move))
-            (x 0) (y 0))
-        (if (= (length coords) 2)
-            (progn
-              (setf x (parse-integer (elt coords 0)))
-              (setf y (parse-integer (elt coords 1))))
-            (let ( (move-int (parse-integer move)))
-              (setf x (/ (- move-int (mod move-int 10)) 10))
-              (setf y (mod move-int 10))))
-        (format t ":debug: coord: ~a, ~a~%" x y)
+  (if (stringp move)
+      (if (string-equal move "quit" :end1 (min 4 (length move)))
+          (progn
+            ;; :fixme: - use a function
+            (setf (last-x board) -1)
+            (setf (last-y board) -1)
+            (list -1 -1)) ; ret. specific list
+          ;; else - check if there is only one integer or two
+          (let ( (coords (split-sequence:split-sequence #\Space move))
+                (x 0) (y 0))
+            (if (= (length coords) 2)
+                (progn
+                  (setf x (parse-integer (elt coords 0)))
+                  (setf y (parse-integer (elt coords 1))))
+                (let ( (move-int (parse-integer move)))
+                  (setf x (/ (- move-int (mod move-int 10)) 10))
+                  (setf y (mod move-int 10))))
+            (format t ":debug: coord: ~a, ~a~%" x y)
+            (if (and (< x 3) (< y 3) 
+                     (eql (aref (slot-value board 'board-array) x y) nil))
+                (progn
+                  ;; :fixme: - group the next 3 (or 4?) lines in a function
+                  (setf (aref (slot-value board 'board-array) x y) mark)
+                  (setf (last-x board) x) 
+                  (setf (last-y board) y)
+                  (list x y)))))
+      ;; else: move = list of coords.
+      (let ((x (first move)) (y (second move)))
+        (format t ":debug: coord (as list): ~a, ~a~%" x y)
         (if (and (< x 3) (< y 3) 
                  (eql (aref (slot-value board 'board-array) x y) nil))
             (progn
-              ;; :fixme: - group the next 3 lines in a function
+              ;; :fixme: - group the next 3 (or 4?) lines in a function
               (setf (aref (slot-value board 'board-array) x y) mark)
               (setf (last-x board) x) 
               (setf (last-y board) y)
@@ -78,11 +90,19 @@
     ;; check columns
     (dotimes (i 3)
       (when (three-in-a-row (board-elt board i 0) i 0 0 1)
-        (return-from x-and-0-end-p t)))))
+        (return-from x-and-0-end-p t)))
+    ;; check full board
+    (dotimes (i 3)
+      (dotimes (j 3)
+        (when (null (board-elt board i j))
+          (return-from x-and-0-end-p nil))))
+    t))
 
   
 (defun x-and-0-run (board player1 player2)
   "Main loop"
+  (player-game-params player1 3 t)
+  (player-game-params player2 3 nil)
   (let ((i 0))
     (loop
        (board-print board)
@@ -99,6 +119,14 @@
        (incf i))
     (board-print board)))
 
+
+(defun x0-cart-coord-to-int (list)
+  "Cartezian coordinates to one dimension array coordinate"
+  (+ (first list) (* (second list) 3)))
+
+(defun x0-int-to-cart-coord (int)
+  "Integer representing one dim. array coordinate to cartezian coordinates"
+  (list (mod int 3) (floor int 3)))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

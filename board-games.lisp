@@ -125,9 +125,19 @@
    :initform "noname"
    :reader name)
 
+   (has-first-move
+    :initarg :first-move
+    :initform nil
+    :reader first-move)
+
+   (board-size
+    :initform nil
+    :reader board-size)
+
    ;; used if player interface is over tcp/ip
    (socket
-    :initform nil)))
+    :initform nil
+    :reader socket)))
 
 ;;; end player class
 
@@ -143,6 +153,7 @@
   (setf (slot-value player 'socket) (usocket:socket-accept socket))
   (format t ":debug: socket accepted for ~a~%" player))
 
+
 ;;; stream might be file, socket, etc.
 (defun player-read-data (stream)
   (format stream "enter move: ")
@@ -155,14 +166,53 @@
 (defmethod print-object ((player player) stream)
   (format stream "<player ~a>" (slot-value player 'name)))
 
+(defgeneric player-game-params (player brd-size is-first)
+  (:documentation "The player gets the game parameters (board size, color,
+  etc.)"))
+
 (defgeneric player-prompt-move (player)
-  (:documentation "Asks the user for a move (board coordinates)"))
+  (:documentation "Asks the user for a move (board coordinates). Result is a
+  string (for humans) or a list with 2 coords (for AIs)."))
 
 (defgeneric player-announce-move (player move)
   (:documentation "Announce the move to the other player"))
 
 (defgeneric player-cleanup (player)
   (:documentation "Cleanup stuff for player (sockets, etc.)"))
+
+
+;;; helper function
+(defun announce-game-params (stream brd-size is-first)
+  (format stream "board size is ~a~%" brd-size)
+  (if is-first
+      (format stream "you are first~%")
+      (format stream "you are second~%")))
+
+
+;;; functions implementation for generic player
+
+(defmethod player-game-params ((player player) brd-size is-first)
+  (setf (slot-value player 'board-size) brd-size) ; why warning on
+                                        ;(setf (board-size player) brd-size) ?
+  (setf (slot-value player 'has-first-move) is-first)
+
+  ;; announce game params
+  (cond
+    ((eql (interface player) :stdio)
+     (announce-game-params *query-io* brd-size is-first))
+
+    ((eql (interface player) :tcp)
+     ;; init tcp communication
+     (when (null (slot-value player 'socket))
+       (when (null *socket*)
+         (init-server-socket +tcp-port+))
+       (player-accept-socket player *socket*))
+     (announce-game-params (usocket:socket-stream (socket player))
+                           brd-size is-first))
+
+    (t ) ; probably an AI player, does not need printed messages, it should
+                                        ; implement this method
+    ))
 
 
 ;; :fixme: - add limits - to refuse invalid coordinates immediately
@@ -174,14 +224,11 @@
      (read-line *query-io*))
 
     ((eql (interface player) :tcp)
-     (when (null (slot-value player 'socket))
-       (when (null *socket*)
-         (init-server-socket +tcp-port+))
-       (player-accept-socket player *socket*))
      (player-read-data (usocket:socket-stream (slot-value player 'socket))))
 
     (t
      (error "Not implemented yet"))))
+
 
 (defmethod player-announce-move ((player player) move)
   (cond

@@ -42,6 +42,11 @@
                (make-instance 'player :name "lolek" :interface :tcp)
                (make-instance 'player :name "bolek")))
 
+(defun test-game-human-vs-random-ai ()
+  (x-and-0-run (make-instance 'x-and-0-board)
+               (make-instance 'x0-player-random)
+               (make-instance 'player :name "bolek")))
+
 ;;; function used for resetting various runtime variables during testing
 ;;; (sockets, globals, etc.)
 (defun test-env-reset ()

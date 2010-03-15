@@ -9,6 +9,9 @@
                  (:file "x-and-0"
                         :depends-on ("package"
                                      "board-games"))
+                 (:file "x-and-0-player"
+                        :depends-on ("package"
+                                     "board-games"))
                  (:file "test/x-and-0-test"
                         :depends-on ("package"
                                      "board-games"

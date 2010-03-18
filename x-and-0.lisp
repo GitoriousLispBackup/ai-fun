@@ -26,7 +26,7 @@
                   (setf x (/ (- move-int (mod move-int 10)) 10))
                   (setf y (mod move-int 10))))
             (format t ":debug:parse-move: coord. in string: ~a, ~a~%" x y)
-            (if (and (< x 3) (< y 3) 
+            (if (and (< x 3) (< y 3)
                      (eql (aref (slot-value board 'board-array) x y) nil))
                 (board-move board x y mark))))
       ;; else: move = list of coords.

@@ -5,7 +5,16 @@
            :size
            :point-at-intersection
            :board-array
-           :board-elt))
+           :board-elt
+           :board-move
+           :board-print
+           :last-x
+           :last-y
+           :player-game-params
+           :player-prompt-move
+           :player-announce-move
+           :player-cleanup
+           :*socket*))
 
 (defpackage :ai-fun.x-and-0
   (:use :common-lisp :ai-fun.board-games)

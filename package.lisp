@@ -10,6 +10,7 @@
            :board-print
            :last-x
            :last-y
+           :player
            :player-game-params
            :player-prompt-move
            :player-announce-move
@@ -19,7 +20,8 @@
 (defpackage :ai-fun.x-and-0
   (:use :common-lisp :ai-fun.board-games)
   (:export :x-and-0-board :parse-move :board-array 
-		   :board-elt :x-and-0-end-p :x-and-0-run :board-move))
+		   :board-elt :x-and-0-end-p :x-and-0-run :board-move
+           :x0-player-random))
 
 (defpackage :ai-fun.test-unit
   (:use :common-lisp :ai-fun.board-games :ai-fun.x-and-0)

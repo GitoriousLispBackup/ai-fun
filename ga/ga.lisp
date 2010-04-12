@@ -11,7 +11,7 @@
 		 (when (>= ,log-level 3)
 		   (format t ":debug:"))
 		 (let ((eol t))
-		   (dolist (p (list ,@print-list)) 
+		   (dolist (p (list ,@print-list))
 			 (if (eql p ':no-eol)
 				 (setf eol nil)
 				 (format t "~a" p)))
@@ -21,6 +21,7 @@
 ;; population must be a list
 (defmacro ga-print-population (log-level prefix-string &rest population)
   "Print population and fitness to stdout (one line)"
+  ;; :fixme: use pprint or equivalent
   (if (<= log-level *ga-log-level*)
 	  `(progn
 		 (dotimes (i ,log-level) (format t " "))
@@ -99,8 +100,11 @@ ga-entity, fitness=genome."
   (> (fitness ent1) (fitness ent2)))
 
 (defmethod ga-crossover ((ent1 ga-entity) (ent2 ga-entity))
-  "Crossover for ga-entity - do nothing (yet). Allocates new entities."
-  (list (ga-entity-duplicate ent1) (ga-entity-duplicate ent2)))
+  "Crossover for ga-entity. Allocates new entities."
+  (let ((crossed-list (random-crossover-integers (genome ent1) (genome ent2))))
+	(list
+	 (make-instance 'ga-entity :genome (first crossed-list))
+	 (make-instance 'ga-entity :genome (second crossed-list)))))
 
 (defmethod ga-mutation ((ent ga-entity))
   "Flip one bit and reset the genome"
@@ -130,9 +134,13 @@ ga-entity, fitness=genome."
 	new-ent))
 
 (defmethod ga-crossover ((ent1 ga-entity-max-func) (ent2 ga-entity-max-func))
-  "Crossover for ga-entity-max-func - do nothing (:todo:). Allocates new
-entities."
-  (list (ga-entity-duplicate ent1) (ga-entity-duplicate ent2)))
+  "Crossover for ga-entity-max-func. Allocates new entities."
+  (let ((crossed-list (random-crossover-integers (genome ent1) (genome ent2))))
+	(list
+	 (make-instance 'ga-entity-max-func
+					:genome (first crossed-list) :func (func ent1))
+	 (make-instance 'ga-entity-max-func
+					:genome (second crossed-list) :func (func ent2)))))
 
 (defmethod ga-mutation ((ent ga-entity-max-func))
   "Flip one bit and create a new mutant entity"
@@ -147,6 +155,39 @@ entities."
   (let ((bit-pos (random 17))) ; fixnums have at least 15 bits
 	(ga-log 4 "bit to flip:" bit-pos)
 	(boole boole-xor num (ash 1 bit-pos))))
+
+
+;;; only for positive integers (:fixme:)
+(defun random-crossover-integers (no1 no2 &key
+								  (force-position nil position-supplied-p))
+  "Switch parts of the binary representation of the two numbers. Return a list
+								  with the new numbers"
+  (when (= no1 no2 0)
+	(return-from random-crossover-integers (list 0 0)))
+  (let ((len (max (integer-length no1) (integer-length no2)))
+		(pos 0))
+	(if position-supplied-p
+		(progn
+		  (when (> force-position len)
+			(error "Invalid force-position parameter"))
+		  (setf pos force-position))
+		(setf pos (random len))) ; :fixme: len+1 ?
+	(let ((lsb (byte (+ pos 1) 0))
+		  (msb (byte (- len pos 1) (+ pos 1)))
+		  (ret1 0) (ret2 0))
+	  (ga-log 5 "pos=" pos ", len=" len ", no1 msb=" (ldb msb no1)
+			  ", no1 lsb=" (ldb lsb no1) ", no2 msb=" (ldb msb no1)
+			  ", no2 lsb=" (ldb lsb no2))
+	  ;; ret1 msb = no1 msb
+	  (setf ret1 (dpb (ldb msb no1) msb ret1))
+	  ;; ret1 lsb = no2 lsb
+	  (setf ret1 (dpb (ldb lsb no2) lsb ret1))
+	  ;; ret2 msb = no2 msb
+	  (setf ret2 (dpb (ldb msb no2) msb ret2))
+	  ;; ret2 lsb = no1 lsb
+	  (setf ret2 (dpb (ldb lsb no1) lsb ret2))
+	  (list ret1 ret2))))
+
 
 ;;; GA functions
   
@@ -232,6 +273,7 @@ entities."
 	 (equal (ga-selection (list simple-ent1 simple-ent2) 2)
 			(list simple-ent2 simple-ent1))
 	 (eql (fitness max-ent1) 25)
+	 (equal (random-crossover-integers 4 7 :force-position 0) (list 5 6))
    ;; add tests above 
 )))
 
@@ -259,8 +301,10 @@ entities."
 										:func func)))))
 	generated-list))
 
-(defun ga-run-sinxdx ()
-  "Find max of (100 * sin x) / x"
-  (ga-run (ga-generate-random-entities 10 100000
-									   #'(lambda (x) (/ (* (sin x) 100) x))) 30
-									   :mutation-probability 0.9))
+;;; http://www.wolframalpha.com/input/?i=-x^2%2B15x%2B20
+(defun ga-run-parabola-1 ()
+  "Find max of -x^2+15x+20 (max=305/4=76.25 at x=15/2=7.5)"
+  (ga-run (ga-generate-random-entities
+		   10 100000 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20)))
+		  200
+		  :mutation-probability 0.5))

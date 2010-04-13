@@ -33,6 +33,12 @@
 		 (terpri))))
 
 
+;;; helper functions
+(defun random-between (limit-low limit-high)
+  "Generate a random number between limit-low and limit-high"
+  (+ (random (- limit-high limit-low)) limit-low))
+
+
 ;;; GA classes
 
 (defclass ga-entity ()
@@ -50,7 +56,17 @@
   ((func
 	:initform nil
 	:initarg :func
-	:accessor func)))
+	:accessor func)
+
+   (min-x
+	:initform 0
+	:initarg :min-x
+	:reader min-x)
+
+   (max-x
+	:initform 1
+	:initarg :max-x
+	:reader max-x)))
 
 
 (defgeneric ga-entity-duplicate (entity)
@@ -101,7 +117,7 @@ ga-entity, fitness=genome."
 
 (defmethod ga-crossover ((ent1 ga-entity) (ent2 ga-entity))
   "Crossover for ga-entity. Allocates new entities."
-  (let ((crossed-list (random-crossover-integers (genome ent1) (genome ent2))))
+  (let ((crossed-list (random-crossover-int (genome ent1) (genome ent2))))
 	(list
 	 (make-instance 'ga-entity :genome (first crossed-list))
 	 (make-instance 'ga-entity :genome (second crossed-list)))))
@@ -129,22 +145,38 @@ ga-entity, fitness=genome."
   "Allocate a new entity"
   (let ((new-ent (make-instance 'ga-entity-max-func
 								:genome (genome ent)
-								:func (func ent))))
+								:func (func ent)
+								:min-x (min-x ent)
+								:max-x (max-x ent))))
 	(fitness new-ent)
 	new-ent))
 
 (defmethod ga-crossover ((ent1 ga-entity-max-func) (ent2 ga-entity-max-func))
   "Crossover for ga-entity-max-func. Allocates new entities."
-  (let ((crossed-list (random-crossover-integers (genome ent1) (genome ent2))))
+  (let* ((minx (min-x ent1)) (maxx (max-x ent1))
+		 (crossed-list (random-crossover-int-lim (genome ent1) (genome ent2)
+												 :limit-low minx
+												 :limit-high maxx)))
 	(list
 	 (make-instance 'ga-entity-max-func
-					:genome (first crossed-list) :func (func ent1))
+					:genome (first crossed-list) :func (func ent1)
+					:min-x minx :max-x maxx)
 	 (make-instance 'ga-entity-max-func
-					:genome (second crossed-list) :func (func ent2)))))
+					:genome (second crossed-list) :func (func ent2)
+					:min-x minx :max-x maxx))))
 
 (defmethod ga-mutation ((ent ga-entity-max-func))
   "Flip one bit and create a new mutant entity"
-  (setf (genome ent) (random-bit-flip (genome ent))))
+  ;; :fixme: fix lockup situations
+  (loop
+	 (let ((candidate (random-bit-flip (genome ent))))
+	   (when (and
+			  (<= candidate (max-x ent))
+			  (>= candidate (min-x ent)))
+		 (setf (genome ent) candidate)
+		 (return))
+	   (ga-log 5 "incorrect mutation for " (genome ent) ":" candidate)
+	   (ga-log 5 "limits are: " (min-x ent) "-" (max-x ent)))))
 
 (defmethod ga> ((ent1 ga-entity-max-func) (ent2 ga-entity-max-func))
   (> (fitness ent1) (fitness ent2)))
@@ -157,13 +189,28 @@ ga-entity, fitness=genome."
 	(boole boole-xor num (ash 1 bit-pos))))
 
 
+(defun random-crossover-int-lim (no1 no2 &key
+								  (limit-low 0 low-p) (limit-high 0 high-p))
+  "Switch parts of the binary representation of the two numbers. Return a list
+								  with the new numbers. Numbers are between
+								  limit-low and limit-high"
+	;; :fixme: fix lockup if no solution possible !!
+	(loop
+	   (let* ((ret (random-crossover-int no1 no2))
+			  (ret1 (first ret)) (ret2 (second ret)))
+		 (when (and
+				 (and low-p (>= limit-low ret1) (>= limit-low ret2))
+				 (and high-p (<= ret1 limit-high) (<= ret2 limit-high))))
+		   (return ret))))
+
+
 ;;; only for positive integers (:fixme:)
-(defun random-crossover-integers (no1 no2 &key
-								  (force-position nil position-supplied-p))
+(defun random-crossover-int (no1 no2 &key
+							 (force-position nil position-supplied-p))
   "Switch parts of the binary representation of the two numbers. Return a list
 								  with the new numbers"
   (when (= no1 no2 0)
-	(return-from random-crossover-integers (list 0 0)))
+	(return-from random-crossover-int (list 0 0)))
   (let ((len (max (integer-length no1) (integer-length no2)))
 		(pos 0))
 	(if position-supplied-p
@@ -236,6 +283,7 @@ ga-entity, fitness=genome."
   (declare (ignore population))
   (>= current-time max-time))
 
+
 (defun ga-run (population max-time &key
 			   (cross-probability 0.5) (mutation-probability 0.5))
   "Run the simulation"
@@ -261,8 +309,10 @@ ga-entity, fitness=genome."
 	   (incf current-time)))) ; :fixme: return what?
 
 
+;;; test cases functions
+
 (defun ga-test ()
-  "Test GA functions / classes"
+  "Basic tests for GA functions / classes"
   (let ((simple-ent1 (make-instance 'ga-entity :genome 5))
 		(simple-ent2 (make-instance 'ga-entity :genome 7))
 		(max-ent1 (make-instance 'ga-entity-max-func :genome 5
@@ -273,7 +323,7 @@ ga-entity, fitness=genome."
 	 (equal (ga-selection (list simple-ent1 simple-ent2) 2)
 			(list simple-ent2 simple-ent1))
 	 (eql (fitness max-ent1) 25)
-	 (equal (random-crossover-integers 4 7 :force-position 0) (list 5 6))
+	 (equal (random-crossover-int 4 7 :force-position 0) (list 5 6))
    ;; add tests above 
 )))
 
@@ -291,20 +341,22 @@ ga-entity, fitness=genome."
   "Run a simulation with ga-entities"
   (ga-run (ga-make-entity-list) 5))
 
-(defun ga-generate-random-entities (max-len upper-limit func)
+(defun ga-generate-random-entities (max-len func limit-low limit-high)
+  "Generate a list with random entities of type ga-entity-max-func"
   (let ((generated-list nil))
 	(dotimes (i max-len)
 	  (setf generated-list
 			(nconc generated-list
-				   (list (make-instance 'ga-entity-max-func
-										:genome (random upper-limit)
-										:func func)))))
+				   (list (make-instance
+						  'ga-entity-max-func
+						  :genome (random-between limit-low limit-high)
+						  :func func :min-x limit-low :max-x limit-high)))))
 	generated-list))
 
 ;;; http://www.wolframalpha.com/input/?i=-x^2%2B15x%2B20
 (defun ga-run-parabola-1 ()
   "Find max of -x^2+15x+20 (max=305/4=76.25 at x=15/2=7.5)"
   (ga-run (ga-generate-random-entities
-		   10 100000 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20)))
-		  200
+		   10 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20)) 0 100000)
+		  200 ; iterations
 		  :mutation-probability 0.5))

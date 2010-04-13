@@ -27,6 +27,17 @@
   (:use :common-lisp :ai-fun.board-games :ai-fun.x-and-0)
   (:export :test-automatic-all :test-manual-game :test-game-human-vs-random-ai))
 
+;; Genetic Algorithm package
+(defpackage :ai-fun.ga
+  (:use :common-lisp)
+  (:export :ga-entity
+           :ga-entity-max-func
+           :ga-run))
+           
+;; ai-fun.visual uses zpng (http://www.xach.com/lisp/zpng/)
+(defpackage :ai-fun.visual
+  (:use :common-lisp :zpng)
+  (:export :save-universe))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

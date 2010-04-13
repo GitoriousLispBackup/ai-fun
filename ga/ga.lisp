@@ -1,5 +1,7 @@
 ;;; Genetic Algorithms framework
 
+(in-package :ai-fun.ga)
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (defparameter *ga-log-level* 2))
   
@@ -34,6 +36,7 @@
 
 
 ;;; helper functions
+
 (defun random-between (limit-low limit-high)
   "Generate a random number between limit-low and limit-high"
   (+ (random (- limit-high limit-low)) limit-low))
@@ -131,7 +134,10 @@ ga-entity, fitness=genome."
 
 (defmethod print-object ((ent ga-entity-max-func) stream)
   "Print a ga-entity-max-func object"
-  (format stream "GAMax:~a(~3$)" (genome ent) (fitness ent)))
+  (if *print-pretty*
+	(format stream "GAMax:~a(~3$)" (genome ent) (fitness ent))
+	(format stream "~a" (list (genome ent) (fitness ent)))))
+
 
 (defmethod fitness ((ent ga-entity-max-func))
   "Fitness for GA entities for calculating max. value of a function"
@@ -291,7 +297,7 @@ ga-entity, fitness=genome."
   (let ((current-time 0) (len (length population)))
 	(ga-print-population 3 "initial " population)
 	(loop
-	   (ga-log 1 "* time: " current-time)
+	   ;;(ga-log 1 "* time: " current-time)
 	   (let ((new-population (ga-selection population (floor (/ len 2)))))
 		 (ga-print-population 3 "after selection - " new-population)
 		 ;; reproduction (with or without crossover)
@@ -302,10 +308,12 @@ ga-entity, fitness=genome."
 		 (ga-mutate new-population mutation-probability)
 		 (ga-print-population 3 "after mutation - " new-population)
 		 (when (ga-finished-p new-population current-time max-time)
+		   ;;(save-universe population :time current-time)
 		   (ga-print-population 0 "* final population - " new-population)
 		   (return))
 		 (setf population new-population))
 	   (ga-print-population 2 "* population: " population)
+	   ;;(save-universe population :time current-time)
 	   (incf current-time)))) ; :fixme: return what?
 
 
@@ -360,3 +368,9 @@ ga-entity, fitness=genome."
 		   10 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20)) 0 100000)
 		  200 ; iterations
 		  :mutation-probability 0.5))
+
+;;; * emacs display settings *
+;;; Local Variables:
+;;; default-tab-width: 4
+;;; indent-tabs-mode: nil
+;;; End:

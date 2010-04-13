@@ -8,6 +8,9 @@
 (require 'usocket)
 (require 'split-sequence)
 
+(require 'zpng) ; (http://www.xach.com/lisp/zpng/)
+;; zpng uses salza2
+
 (asdf:defsystem :ai-fun
     :components ((:file "package")                        
                  (:file "board-games"
@@ -22,7 +25,9 @@
                  (:file "test/x-and-0-test"
                         :depends-on ("package"
                                      "board-games"
-                                     "x-and-0"))))
+                                     "x-and-0"))
+                 (:file "ga/ga"
+                        :depends-on ("package"))))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

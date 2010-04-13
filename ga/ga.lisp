@@ -291,13 +291,14 @@ ga-entity, fitness=genome."
 
 
 (defun ga-run (population max-time &key
-			   (cross-probability 0.5) (mutation-probability 0.5))
+			   (cross-probability 0.5) (mutation-probability 0.5)
+			   (output-func nil))
   "Run the simulation"
   ;; main loop
   (let ((current-time 0) (len (length population)))
 	(ga-print-population 3 "initial " population)
 	(loop
-	   ;;(ga-log 1 "* time: " current-time)
+	   (ga-log 1 "* time: " current-time)
 	   (let ((new-population (ga-selection population (floor (/ len 2)))))
 		 (ga-print-population 3 "after selection - " new-population)
 		 ;; reproduction (with or without crossover)
@@ -308,13 +309,26 @@ ga-entity, fitness=genome."
 		 (ga-mutate new-population mutation-probability)
 		 (ga-print-population 3 "after mutation - " new-population)
 		 (when (ga-finished-p new-population current-time max-time)
-		   ;;(save-universe population :time current-time)
+		   (when output-func
+			 (funcall output-func population current-time))
 		   (ga-print-population 0 "* final population - " new-population)
 		   (return))
 		 (setf population new-population))
 	   (ga-print-population 2 "* population: " population)
-	   ;;(save-universe population :time current-time)
+	   ;; export at each step - :todo: (maybe optional?)
+	   ;(when output-func
+		 ;(funcall output-func population current-time))
 	   (incf current-time)))) ; :fixme: return what?
+
+
+(defun ga-find-max (population-size func min-x max-x max-time &key
+					(cross-probability 0.5) (mutation-probability 0.5)
+					(output-func nil))
+  "Run a simulation to find max. of the specified function using
+					ga-entity-max-func."
+   (ga-run (ga-generate-random-entities population-size func min-x max-x)
+		  max-time :mutation-probability mutation-probability
+		  :cross-probability cross-probability :output-func output-func))
 
 
 ;;; test cases functions
@@ -364,10 +378,10 @@ ga-entity, fitness=genome."
 ;;; http://www.wolframalpha.com/input/?i=-x^2%2B15x%2B20
 (defun ga-run-parabola-1 ()
   "Find max of -x^2+15x+20 (max=305/4=76.25 at x=15/2=7.5)"
-  (ga-run (ga-generate-random-entities
-		   10 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20)) 0 100000)
-		  200 ; iterations
-		  :mutation-probability 0.5))
+  (ga-find-max 10 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20))
+			   0 100000 ; min&max
+			   200 ; iterations
+			   :mutation-probability 0.5))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

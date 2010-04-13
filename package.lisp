@@ -32,11 +32,13 @@
   (:use :common-lisp)
   (:export :ga-entity
            :ga-entity-max-func
-           :ga-run))
+           :func
+           :ga-run
+           :ga-find-max))
            
 ;; ai-fun.visual uses zpng (http://www.xach.com/lisp/zpng/)
 (defpackage :ai-fun.visual
-  (:use :common-lisp :zpng)
+  (:use :common-lisp :zpng :ai-fun.ga)
   (:export :save-universe))
 
 ;;; * emacs display settings *

@@ -27,7 +27,10 @@
                                      "board-games"
                                      "x-and-0"))
                  (:file "ga/ga"
-                        :depends-on ("package"))))
+                        :depends-on ("package"))
+                 (:file "visual/visual"
+                        :depends-on ("package"
+                                     "ga/ga"))))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

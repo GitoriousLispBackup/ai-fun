@@ -292,7 +292,7 @@ ga-entity, fitness=genome."
 
 (defun ga-run (population max-time &key
 			   (cross-probability 0.5) (mutation-probability 0.5)
-			   (output-func nil))
+			   (output-func nil) (output-extra-param nil))
   "Run the simulation"
   ;; main loop
   (let ((current-time 0) (len (length population)))
@@ -310,28 +310,29 @@ ga-entity, fitness=genome."
 		 (ga-print-population 3 "after mutation - " new-population)
 		 (when (ga-finished-p new-population current-time max-time)
 		   (when output-func
-			 (funcall output-func population current-time))
+			 (funcall output-func new-population current-time output-extra-param))
 		   (ga-print-population 0 "* final population - " new-population)
 		   (return))
 		 (setf population new-population))
 	   (ga-print-population 2 "* population: " population)
 	   ;; export at each step - :todo: (maybe optional?)
-	   ;(when output-func
-		 ;(funcall output-func population current-time))
+       (when output-func
+         (funcall output-func population current-time output-extra-param))
 	   (incf current-time)))) ; :fixme: return what?
 
 
 (defun ga-find-max (population-size func min-x max-x max-time &key
 					(cross-probability 0.5) (mutation-probability 0.5)
-					(output-func nil))
+					(output-func nil) (output-extra-param nil))
   "Run a simulation to find max. of the specified function using
 					ga-entity-max-func."
    (ga-run (ga-generate-random-entities population-size func min-x max-x)
 		  max-time :mutation-probability mutation-probability
-		  :cross-probability cross-probability :output-func output-func))
+		  :cross-probability cross-probability :output-func output-func
+          :output-extra-param output-extra-param))
 
 
-;;; test cases functions
+;;; test cases functions :todo: - to be moved to test/ga-test.lisp
 
 (defun ga-test ()
   "Basic tests for GA functions / classes"
@@ -375,13 +376,6 @@ ga-entity, fitness=genome."
 						  :func func :min-x limit-low :max-x limit-high)))))
 	generated-list))
 
-;;; http://www.wolframalpha.com/input/?i=-x^2%2B15x%2B20
-(defun ga-run-parabola-1 ()
-  "Find max of -x^2+15x+20 (max=305/4=76.25 at x=15/2=7.5)"
-  (ga-find-max 10 #'(lambda (x) (+ (* -1 (* x x)) (* 15 x) 20))
-			   0 100000 ; min&max
-			   200 ; iterations
-			   :mutation-probability 0.5))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

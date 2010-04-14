@@ -30,7 +30,11 @@
                         :depends-on ("package"))
                  (:file "visual/visual"
                         :depends-on ("package"
-                                     "ga/ga"))))
+                                     "ga/ga"))
+                 (:file "test/ga-test"
+                        :depends-on ("package"
+                                     "ga/ga"
+                                     "visual/visual"))))
 
 ;;; * emacs display settings *
 ;;; Local Variables:

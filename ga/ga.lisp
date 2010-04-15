@@ -274,7 +274,7 @@ ga-entity, fitness=genome."
 	new-population))
 	  
 (defun ga-mutate (population mutation-probability)
-  "Mutate population in list (according to mutation-probability"
+  "Mutate population in list (according to mutation-probability)"
   (let ((elt population))
 	(loop while elt do
 		 (ga-log 5 "pre. elt=" (car elt) " type-of elt=" (type-of elt))

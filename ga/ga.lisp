@@ -3,7 +3,7 @@
 (in-package :ai-fun.ga)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (defparameter *ga-log-level* 2))
+  (defparameter *ga-log-level* 1))
   
 (defmacro ga-log (log-level &rest print-list)
   (if (<= log-level *ga-log-level*)
@@ -175,10 +175,9 @@ ga-entity, fitness=genome."
   "Flip one bit and create a new mutant entity"
   ;; :fixme: fix lockup situations
   (loop
-	 (let ((candidate (random-bit-flip (genome ent))))
-	   (when (and
-			  (<= candidate (max-x ent))
-			  (>= candidate (min-x ent)))
+     ;; mutate at most 3 bits at a time (:fixme: - add a param?)
+	 (let ((candidate (random-bit-flip (genome ent) :bits (+ 1 (random 3)))))
+	   (when (and (<= candidate (max-x ent)) (>= candidate (min-x ent)))
 		 (setf (genome ent) candidate)
 		 (return))
 	   (ga-log 5 "incorrect mutation for " (genome ent) ":" candidate)
@@ -189,10 +188,12 @@ ga-entity, fitness=genome."
 
 ;;; helper functions
 
-(defun random-bit-flip (num)
-  (let ((bit-pos (random 17))) ; fixnums have at least 15 bits
-	(ga-log 4 "bit to flip:" bit-pos)
-	(boole boole-xor num (ash 1 bit-pos))))
+(defun random-bit-flip (num &key (bits 1))
+  (let ((retval num))
+    (dotimes (i bits retval)
+      (let ((bit-pos (random 17))) ; fixnums have at least 15 bits
+        (ga-log 4 "bit to flip:" bit-pos)
+        (setf retval (boole boole-xor retval (ash 1 bit-pos)))))))
 
 
 (defun random-crossover-int-lim (no1 no2 &key
@@ -205,7 +206,7 @@ ga-entity, fitness=genome."
 	   (let* ((ret (random-crossover-int no1 no2))
 			  (ret1 (first ret)) (ret2 (second ret)))
 		 (when (and
-				 (and low-p (>= limit-low ret1) (>= limit-low ret2))
+				 (and low-p (>= ret1 limit-low) (>= ret2 limit-low))
 				 (and high-p (<= ret1 limit-high) (<= ret2 limit-high))))
 		   (return ret))))
 
@@ -259,19 +260,24 @@ ga-entity, fitness=genome."
   "Perform reproduction"
   (let ((new-population nil) (len (length population)))
 	(dotimes (i (floor (/ new-length 2)))
-	  (let ((p1 (nth (random len) population))
-			(p2 (nth (random len) population)))
-		(if (< (random 1.0) cross-probability)
-			(setf new-population (nconc new-population (ga-crossover p1 p2)))
-			(setf new-population (nconc new-population
-										(list (ga-entity-duplicate p1)
-											  (ga-entity-duplicate p2)))))))
-	(when (< (length new-population) new-length)
-	  (setf new-population (nconc new-population
-								  (cons (ga-entity-duplicate (nth (random len)
-																  population))
-										nil))))
-	new-population))
+      (let ((pos1 (random len)) (pos2 (random len)))
+        (when (= pos1 pos2)
+          (loop while (= pos1 pos2) do
+               (setf pos2 (random len))))
+        (ga-log 4 "reproduction between pos " pos1 " and " pos2)
+        (let ((p1 (nth pos1 population))
+              (p2 (nth pos2 population)))
+          (if (< (random 1.0) cross-probability)
+              (setf new-population (nconc new-population (ga-crossover p1 p2)))
+              (setf new-population (nconc new-population
+                                          (list (ga-entity-duplicate p1)
+                                                (ga-entity-duplicate p2))))))))
+    (when (< (length new-population) new-length)
+      (setf new-population (nconc new-population
+                                  (cons (ga-entity-duplicate (nth (random len)
+                                                                  population))
+                                        nil))))
+    new-population))
 	  
 (defun ga-mutate (population mutation-probability)
   "Mutate population in list (according to mutation-probability)"

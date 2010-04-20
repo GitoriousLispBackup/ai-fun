@@ -37,19 +37,19 @@ simulation to png files."
 											nil) trans))))
 
 ;;; http://www.wolframalpha.com/input/?i=1000+sin+%28x%2F50%2B3%29+%2F+ln+%28x%2F50%2B3%29+
-(defun ga-run-func-sinxlnx-png ()
+(defun ga-run-func-sinxlnx-png (&optional (file-prefix nil))
   "Find max of 1000 sin (x/50+3) / ln (x/50+3). Save simulation to png files."
   (let ((func #'(lambda (x) (/ (* 1000 (sin (+ (/ x 50) 3))) (log (+ (/ x 50) 3)))))
-		(trans (list 0 0.5 500 1)))
+		(trans (list 0 0.35 500 0.75)))
     ;; simulation params:
     ;; population size = 10, 50 iterations, png output size 1200x1000
-    (ga-find-max 10 func 0 50000 50
-                 :mutation-probability 0.5
+    (ga-find-max 14 func 0 10000 100
+                 :mutation-probability 0.60
+                 :cross-probability 0.40
                  :output-func 'save-ga-universe-to-png
-                 :output-extra-param (append
-                                      (list (png-generate-white-png
-                                             1920 1080 trans func)
-											nil) trans))))
+                 :output-extra-param (append (list (png-generate-white-png
+                                                    1920 1080 trans func)
+                                                   file-prefix) trans))))
 
 ;;; http://www.wolframalpha.com/input/?i=-x^2%2B15x%2B20
 (defun ga-run-parabola-2 ()
@@ -62,10 +62,10 @@ simulation to png files."
 
 ;;; PNG tests
 
-(defun png-save-white-png (filename width height transformations
-                           &optional (func nil))
-  (write-png (png-generate-white-png width height transformations func)
-             filename))
+(defun test-png-save-white-img (filename width height &key
+                                (transform (list 0 1 0 1)) (func nil))
+  (write-png (png-generate-white-png width height transform func) filename))
+
 
 (defun test-ga-entity-to-png (x filename-prefix &optional (func nil))
   "Save a png file with func graph and ga-entity-max-func with the genome x"

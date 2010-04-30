@@ -8,9 +8,11 @@
   (if (<= log-level *vis-log-level*)
 	  `(progn
 		 ;; :fixme: replace format with something else
-		 (dotimes (i ,log-level) (format t " "))
-		 (when (>= ,log-level 3)
-		   (format t ":debug:"))
+         ,(when (plusp log-level)
+                `(dotimes (i ,log-level) (format t " ")))
+		 ,(when (>= log-level 3)
+                `(format t ":debug:"))
+         ;; :fixme: bad bad - use gensym
 		 (let ((eol t))
 		   (dolist (p (list ,@print-list))
 			 (if (eql p ':no-eol)
